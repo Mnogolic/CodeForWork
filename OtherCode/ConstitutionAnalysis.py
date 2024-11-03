@@ -9,13 +9,16 @@ import nltk
 import re
 
 
+#   класс для создания .txt файла
 class PdfToTxt:
     constitution_path = r"C:\Users\kasja\PycharmProjects\CodeForWork\Constitution_RF_12.11.1.pdf"
     constitution_txt_path = r"C:\Users\kasja\PycharmProjects\CodeForWork\Constitution_RF_12.11.1.txt"
 
+    # Здесь может быть инициализация атрибутов в будущем
     def __init__(self):
         pass
 
+    # Если файл не существует, создадим
     def if_txt_doesnt_exists(self):
         # Проверка существования текстового файла
         print('\n')
@@ -37,7 +40,8 @@ class PdfToTxt:
         else:
             print("Текстовый файл уже существует.")
 
-    def check_file_pathes(self):
+    #   проверка на наличие файла
+    def check_file_paths(self):
         print('\n')
         # Проверка существования PDF-файла
         if os.path.isfile(self.constitution_path):
@@ -54,18 +58,20 @@ class PdfToTxt:
             self.check_file_pathes()  # Рекурсивно проверяем снова
 
 
+#   Класс, где будут собраны методы для работы с БД
 class FunctionsWithFile:
     def __init__(self, file_path):
-        self.file_path = file_path
+        self.file_path = file_path  # это атрибут экземпляра
         self.stop_words = set(stopwords.words('russian'))
 
-    # Передача куда угодно переменной с записанным в неё файлом
+    # Метод для прочтения БД
     def read_our_txt(self):
         with open(self.file_path, "r", encoding="utf-8") as file:
             text = file.read()
 
         return text
 
+    #   Метод, разделяющий базу данных по статьям
     def split_articles(self):
         with open(self.file_path, "r", encoding="utf-8") as file:
             text = file.read()
@@ -78,6 +84,7 @@ class FunctionsWithFile:
 
         return articles
 
+    #   Метод выводящий топ 10 русских слов по популярности в БД
     def top_ten_words(self):
         # Токенизация текста
         words = word_tokenize(self.read_our_txt(), language='russian')
@@ -99,19 +106,27 @@ class FunctionsWithFile:
         for word, frequency in most_common_words:
             print(f"{word}: {frequency}")
 
+    # Рекурсивная метод, чтоб пользователь мог вывести себе все статьи по ключевым словам
     def constitution_news(self):
         articles = self.split_articles()
+        keyword = input("\nВведите ключевое слово для поиска в статьях (exit"
+                        ", чтоб закончить рекурсию): ").strip().lower()
+        keywords = keyword.split()
+
+        #   Выход и рекурсии
+        for keyword in keywords:
+            if keyword == 'exit':
+                print("Выход из программы.")
+                return
+
+        #   Выписываем каждую статью по ключевым словам в ней, или номеру
         for article in articles:
-            if 'конституция' in article.lower() or 'конституции' in article.lower():
+            if all(keyword in article.lower() for keyword in keywords):
                 print(article)
                 print("\n\n" + "=" * 60 + "\n" + "=" * 60 + "\n\n")
 
+        self.constitution_news()  # Рекурсия
 
-""" 
-if __name__ == '__main__':
-    analysis = PdfToTxt()
-    analysis.check_file_pathes()
-"""
 
 if __name__ == '__main__':
     nltk.download('popular')
@@ -122,7 +137,7 @@ if __name__ == '__main__':
     analysis = PdfToTxt()
     functions = FunctionsWithFile(analysis.constitution_txt_path)
 
-    analysis.check_file_pathes()
+    analysis.check_file_paths()
     # Выполняем анализ текста после создания файла
     functions.top_ten_words()
     functions.constitution_news()
